@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+#
+# MIT License
+#
+# Copyright (c) 2022 Marc Khouzam  <marc.khouzam@gmail.com>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+
+# The following are the plugins managed by krew that use Cobra.
+# The list was established on January 22, 2022 and may be out-of-date.
+declare -A supportedPlugins=(
+	["access-matrix"]="true"
+	["accurate"]="true"
+	["advise-policy"]="true"
+	["allctx"]="true"
+	["auth-proxy"]="true"
+	["bd-xray"]="true"
+	["blame"]="true"
+	["cert-manager"]="true"
+	["clusternet"]="true"
+	["cm"]="true"
+	["config-registry"]="true"
+	["cost"]="true"
+	["cyclonus"]="true"
+	["datadog"]="true"
+	["deprecations"]="true"
+	["df-pv"]="true"
+	["edit-status"]="true"
+	["eds"]="true"
+	["explore"]="true"
+	["flame"]="true"
+	["fuzzy"]="true"
+	["gadget"]="true"
+	["get-all"]="true"
+	["graph"]="true"
+	["grep"]="true"
+	["gs"]="true"
+	["hlf"]="true"
+	["hns"]="true"
+	["htpasswd"]="true"
+	["iexec"]="true"
+	["ipick"]="true"
+	["istiolog"]="true"
+	["janitor"]="true"
+	["karbon"]="true"
+	["karmada"]="true"
+	["krew"]="true"
+	["kruise"]="true"
+	["ks"]="true"
+	["ktop"]="true"
+	["kubesec-scan"]="true"
+	["kudo"]="true"
+	["kuota-calc"]="true"
+	["kurt"]="true"
+	["kuttl"]="true"
+	["kyverno"]="true"
+	["lineage"]="true"
+	["mc"]="true"
+	["minio"]="true"
+	["multiforward"]="true"
+	["multinet"]="true"
+	["np-viewer"]="true"
+	["oidc-login"]="true"
+	["open-svc"]="true"
+	["openebs"]="true"
+	["pexec"]="true"
+	["pod-inspect"]="true"
+	["preflight"]="true"
+	["psp-util"]="true"
+	["pv-migrate"]="true"
+	["rbac-tool"]="true"
+	["realname-diff"]="true"
+	["reap"]="true"
+	["relay"]="true"
+	["resource-capacity"]="true"
+	["resource-versions"]="true"
+	["schemahero"]="true"
+	["secretdata"]="true"
+	["shovel"]="true"
+	["skew"]="true"
+	["slice"]="true"
+	["sniff"]="true"
+	["sort-manifests"]="true"
+	["split-yaml"]="true"
+	["starboard"]="true"
+	["status"]="true"
+	["stern"]="true"
+	["strace"]="true"
+	["sudo"]="true"
+	["support-bundle"]="true"
+	["tap"]="true"
+	["trace"]="true"
+	["tunnel"]="true"
+	["vela"]="true"
+	["view-cert"]="true"
+	["view-secret"]="true"
+	["view-serviceaccount-kubeconfig"]="true"
+	["view-webhook"]="true"
+	["viewnode"]="true"
+	["virt"]="true"
+	["whisper-secret"]="true"
+	["who-can"]="true"
+)
+
+krewBin="${KREW_ROOT:-$HOME/.krew}/bin"
+compDir="${KREW_ROOT:-$HOME/.krew}/plugin_completion"
+
+help() {
+	if [[ $# -eq 0 ]]; then
+	    echo "Kubectl plugin to enable shell completion for other installed plugins."
+	    echo
+    	echo "Available commands:"
+		echo "  setup		Setup all possible plugin shell completions"
+		echo "  list		List the plugins for which shell completion was setup by this plugin"
+		echo "  clean		Remove all shell completions that were setup by this plugin"
+		echo "  supported	List the plugins for which shell completion can be setup"
+		echo
+    	echo "Flags:"
+		echo "  -h, --help         help for the plugin"
+	elif [[ $# -eq 1 ]]; then
+		case "$1" in
+			setup)
+				echo "Setup all possible plugin shell completions."
+				echo
+    			echo "Flags:"
+				echo "  -h, --help	help for the plugin"
+				;;
+			list)
+				echo "List the plugins for which shell completion was setup by this plugin."
+				echo
+    			echo "Flags:"
+				echo "  -h, --help	help for the plugin"
+				;;
+			clean)
+				echo "Remove all shell completions that were setup by this plugin."
+				echo
+    			echo "Flags:"
+				echo "  -h, --help	help for the plugin"
+		  		;;
+			supported)
+				echo "List the plugins for which shell completion can be setup."
+				echo
+    			echo "Flags:"
+				echo "  -h, --help	help for the plugin"
+				;;
+			*)
+				help
+				;;
+		esac
+	else
+		help
+	fi
+    exit 0
+}
+
+mkdir -p "$compDir"
+
+# This function is the basic functionality.  It will setup shell completion
+# for any supported plugins that does not have it setup already.
+setup() {
+	for p in $(kubectl krew list); do
+		if [[ ${supportedPlugins[$p]} = "true" ]]; then
+			compFile="kubectl_complete-$p"
+			if ! which $compFile 2>&1 > /dev/null; then
+				cat << EOF > "$compDir/$compFile"
+#!/bin/sh
+kubectl $p __complete "\$@"
+EOF
+				chmod +x "$compDir/$compFile"
+				ln -s "$compDir/$compFile" $krewBin/$compFile
+				echo "Shell completion for plugin '$p' has been setup."
+			else
+				echo "Shell completion for plugin '$p' is already setup."
+			fi
+		else
+			echo "Shell completion for plugin '$p' is not supported."
+		fi
+	done
+}
+
+clean() {
+	for f in $(ls $krewBin/kubectl_complete-*); do
+		if ls -l $f | grep plugin_completion -q; then
+			plugin="${f#$krewBin/kubectl_complete-}"
+			echo "Removing setup for plugin '$plugin'"			
+			rm -f $f
+		fi
+	done
+	rm -f $compDir/kubectl_complete-*
+	rmdir $compDir
+}
+
+supported() {
+	IFS=$'\n' sorted=($(sort <<<"${!supportedPlugins[@]}"))
+	unset IFS
+
+	echo "The plugins for which shell completion can be enabled are:"
+	echo
+	echo "${sorted[@]}"
+}
+
+list() {
+	for f in $(ls $krewBin/kubectl_complete-*); do
+		if ls -l $f | grep plugin_completion -q; then
+			echo "This plugin setup shell completion for plugin '${f#$krewBin/kubectl_complete-}'"
+		fi
+	done
+}
+
+if [ $# -eq 0 ]; then
+	help
+elif [ $# -gt 1 ]; then
+	help $1
+else   # one argument
+	# Check for help first
+    if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+		help
+    fi
+
+	case $1 in
+		setup)
+			setup
+			;;
+		clean)
+			clean
+			;;
+		list)
+			list
+			;;
+		supported)
+			supported
+			;;
+		*)
+			# Unknown argument
+			help
+	esac
+fi
