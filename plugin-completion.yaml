@@ -1,0 +1,34 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: plugin-completion
+spec:
+  homepage: https://github.com/marckhouzam/kubectl-plugin_completion
+  shortDescription: Setup shell completion for different kubectl plugins
+  version: v0.1.0
+  description: |
+    Enable shell completion for some installed plugins (supports over 50% of plugins).
+  caveats: |
+    kubectl v1.24 is required for shell completion to work for plugins.
+
+    This plugin will only activate shell completion for plugins that use the
+    popular Cobra Go library (https://github.com/spf13/cobra).
+
+    Although just as effective, this plugin is a temporary solution until your
+    favorite plugins provide shell completion themselves.
+  platforms:
+  - selector:
+      matchExpressions:
+      - key: os
+        operator: In
+        values:
+        - darwin
+        - linux
+    uri: https://github.com/marckhouzam/kubectl-plugin_completion/releases/download/v0.1.0.tar.gz
+    sha256: 12345
+    bin: kubectl-plugin_completion
+    files:
+    - from: kubectl-plugin_completion
+      to: .
+    - from: LICENSE
+      to: .
