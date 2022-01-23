@@ -29,7 +29,7 @@ if [ $# -eq 1 ]; then
 		echo "-h"
 		echo "--help"
     elif [[ "$1" == "--"* ]]; then
-		echo "-help"
+		echo "--help"
 	else
 		tab=$(printf '\t')
 		echo "setup${tab}Setup all possible plugin shell completions"
