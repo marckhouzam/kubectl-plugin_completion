@@ -30,5 +30,7 @@ spec:
     files:
     - from: kubectl-plugin_completion
       to: .
+    - from: kubectl_complete-plugin_completion
+      to: .
     - from: LICENSE
       to: .
