@@ -7,7 +7,7 @@ spec:
   shortDescription: Setup shell completion for different kubectl plugins
   version: v0.1.0
   description: |
-    Enable shell completion for some installed plugins (supports over 50% of plugins).
+    Enable shell completion for some installed plugins (supports over 50% of krew plugins).
   caveats: |
     kubectl v1.24 is required for shell completion to work for plugins.
 
