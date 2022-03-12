@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# This script provides shell completion for the kubectl pluugin-completion plugin
+# This script provides shell completion for the kubectl plugin-completion plugin
 
 if [ $# -eq 1 ]; then
     if [[ "$1" == "-"* ]]; then
@@ -39,4 +39,4 @@ if [ $# -eq 1 ]; then
 	fi
 fi
 
-echo ":4" # No file completion	
+echo ":4" # No file completion

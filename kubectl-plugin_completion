@@ -25,6 +25,7 @@
 # COLOR codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
 NC='\033[0m'
 
 compDir="$HOME/.kubectl_plugin_completion"
@@ -97,7 +98,7 @@ EOF
 				echo "Shell completion for plugin '$plugin' is already setup."
 			fi
 		else
-			echo -e "${RED}Shell completion for plugin '$plugin' is not supported.${NC}"
+			echo -e "${YELLOW}Shell completion for plugin '$plugin' is not supported.${NC}"
 		fi
 	done
 }
