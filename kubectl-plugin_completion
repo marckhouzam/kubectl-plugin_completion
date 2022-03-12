@@ -85,25 +85,26 @@ mkdir -p "$compDir"
 # for any supported plugins that does not have it setup already.
 setup() {
 	for plugin in $(kubectl plugin list --name-only 2> /dev/null | grep kubectl | grep -v kubectl-plugin_completion); do
-		compFile="kubectl_complete-${plugin#kubectl-}"
+		pluginName=${plugin#kubectl-}
+		compFile="kubectl_complete-${pluginName}"
 		if ! which $compFile > /dev/null 2>&1; then
 			if $(grep ValidArgsFunction -q $(which $plugin));then
 				pluginDir=$(dirname $(which $plugin))
 				cat << EOF > "$compDir/$compFile"
 #!/bin/sh
-kubectl $plugin __complete "\$@"
+kubectl $pluginName __complete "\$@"
 EOF
 				chmod +x "$compDir/$compFile"
 				ln -s "$compDir/$compFile" $pluginDir/$compFile
-				echo -e "${GREEN}Shell completion for plugin '$plugin' has been setup.${NC}"
+				echo -e "${GREEN}Shell completion for plugin '$pluginName' has been setup.${NC}"
 			else
-				echo -e "${YELLOW}Shell completion for plugin '$plugin' is not supported.${NC}"
+				echo -e "${YELLOW}Shell completion for plugin '$pluginName' is not supported.${NC}"
 			fi
 		else
 			if ls "$compDir/$compFile" > /dev/null 2>&1 ; then
-				echo "Shell completion for plugin '$plugin' was already setup."
+				echo "Shell completion for plugin '$pluginName' was already setup."
 			else
-				echo "Shell completion for plugin '$plugin' is already supported."
+				echo "Shell completion for plugin '$pluginName' is already supported."
 			fi
 		fi
 	done
