@@ -33,10 +33,12 @@ compDir="$HOME/.kubectl_plugin_completion"
 help() {
 	if [[ $# -eq 0 ]]; then
 	    echo "Kubectl plugin to enable shell completion for your installed plugins."
+		echo "If an installed plugin does not yet provide its own support for shell completion"
+		echo "this plugin will attempt to partially enable it."
 	    echo
     	echo "Available commands:"
-		echo "  setup		Setup shell completions for all your installed plugins that are supported"
-		echo "  list		List the plugins for which shell completion was setup by this plugin"
+		echo "  setup		Setup partial shell completions for your installed plugins that are supported"
+		echo "  list		List the plugins for which partial shell completion was setup by this plugin"
 		echo "  clean		Remove all shell completions that were setup by this plugin"
 		echo "  supported	List the installed plugins for which shell completion can be setup"
 		echo
@@ -45,7 +47,7 @@ help() {
 	elif [[ $# -eq 1 ]]; then
 		case "$1" in
 			setup)
-				echo "Setup all possible plugin shell completions."
+				echo "Setup partial shell completions for your installed plugins that are supported."
 				echo
     			echo "Flags:"
 				echo "  -h, --help	help for the plugin"
@@ -57,7 +59,7 @@ help() {
 				echo "  -h, --help	help for the plugin"
 		  		;;
 			list)
-				echo "List the plugins for which shell completion was setup by this plugin."
+				echo "List the plugins for which partial shell completion was setup by this plugin."
 				echo
     			echo "Flags:"
 				echo "  -h, --help	help for the plugin"
@@ -83,10 +85,10 @@ mkdir -p "$compDir"
 # for any supported plugins that does not have it setup already.
 setup() {
 	for plugin in $(kubectl plugin list --name-only 2> /dev/null | grep kubectl | grep -v kubectl-plugin_completion); do
-		if $(grep ValidArgsFunction -q $(which $plugin));then
-			pluginDir=$(dirname $(which $plugin))
-			compFile="kubectl_complete-${plugin#kubectl-}"
-			if ! which $compFile 2>&1 > /dev/null; then
+		compFile="kubectl_complete-${plugin#kubectl-}"
+		if ! which $compFile > /dev/null 2>&1; then
+			if $(grep ValidArgsFunction -q $(which $plugin));then
+				pluginDir=$(dirname $(which $plugin))
 				cat << EOF > "$compDir/$compFile"
 #!/bin/sh
 kubectl $plugin __complete "\$@"
@@ -95,15 +97,20 @@ EOF
 				ln -s "$compDir/$compFile" $pluginDir/$compFile
 				echo -e "${GREEN}Shell completion for plugin '$plugin' has been setup.${NC}"
 			else
-				echo "Shell completion for plugin '$plugin' is already setup."
+				echo -e "${YELLOW}Shell completion for plugin '$plugin' is not supported.${NC}"
 			fi
 		else
-			echo -e "${YELLOW}Shell completion for plugin '$plugin' is not supported.${NC}"
+			if ls "$compDir/$compFile" > /dev/null 2>&1 ; then
+				echo "Shell completion for plugin '$plugin' was already setup."
+			else
+				echo "Shell completion for plugin '$plugin' is already supported."
+			fi
 		fi
 	done
 }
 
 clean() {
+	echo "About to remove the temporary shell completion this plugin had setup."
 	for f in $(ls $compDir/kubectl_complete-* 2> /dev/null); do
 		plugin="${f#$compDir/kubectl_complete-}"
 		echo "Removing setup for plugin '$plugin'"			
@@ -114,7 +121,7 @@ clean() {
 }
 
 list() {
-	echo "This plugin setup shell completion for the following plugins:"
+	echo "This plugin has partially setup shell completion for the following plugins:"
 	echo
 	for f in $(ls $compDir/kubectl_complete-* 2> /dev/null); do
 		if ls -l $f | grep plugin_completion -q; then
@@ -125,7 +132,7 @@ list() {
 
 supported() {
 	allPlugins=$(kubectl plugin list --name-only 2> /dev/null | grep kubectl | grep -v kubectl-plugin_completion)
-	echo "The installed plugins for which shell completion can be enabled are:"
+	echo "The installed plugins for which shell completion can be partially enabled are:"
 	echo
 	for plugin in $allPlugins; do
 		if $(grep ValidArgsFunction -q $(which "$plugin"));then

@@ -32,10 +32,10 @@ if [ $# -eq 1 ]; then
 		echo "--help"
 	else
 		tab=$(printf '\t')
-		echo "setup${tab}Setup all possible plugin shell completions"
+		echo "setup${tab}Setup partial shell completions for your installed plugins that are supported"
 		echo "list${tab}List the plugins for which shell completion was setup by this plugin"
 		echo "clean${tab}Remove all shell completions that were setup by this plugin"
-		echo "supported${tab}List the plugins for which shell completion can be setup"
+		echo "supported${tab}List the installed plugins for which partial shell completion can be setup"
 	fi
 fi
 
