@@ -84,10 +84,12 @@ mkdir -p "$compDir"
 # This function is the basic functionality.  It will setup shell completion
 # for any supported plugins that does not have it setup already.
 setup() {
-	for plugin in $(kubectl plugin list --name-only 2> /dev/null | grep kubectl | grep -v kubectl-plugin_completion); do
+	for plugin in $(kubectl plugin list --name-only 2> /dev/null | grep kubectl); do
 		pluginName=${plugin#kubectl-}
 		compFile="kubectl_complete-${pluginName}"
 		if ! which $compFile > /dev/null 2>&1; then
+			# Check if $plugin contains the string ValidArgsFunction which
+			# is a way to know it uses Cobra.
 			if $(grep ValidArgsFunction -q $(which $plugin));then
 				pluginDir=$(dirname $(which $plugin))
 				cat << EOF > "$compDir/$compFile"
@@ -132,7 +134,7 @@ list() {
 }
 
 supported() {
-	allPlugins=$(kubectl plugin list --name-only 2> /dev/null | grep kubectl | grep -v kubectl-plugin_completion)
+	allPlugins=$(kubectl plugin list --name-only 2> /dev/null | grep kubectl)
 	echo "The installed plugins for which shell completion can be partially enabled are:"
 	echo
 	for plugin in $allPlugins; do
@@ -141,6 +143,41 @@ supported() {
 		fi
 	done
 }
+
+complete() {
+	if [ $# -eq 1 ]; then
+	    if [[ "$1" == "-"* ]]; then
+			echo "-h"
+			echo "--help"
+	    elif [[ "$1" == "--"* ]]; then
+			echo "--help"
+		else
+			tab=$(printf '\t')
+			echo "setup${tab}Setup partial shell completions for your installed plugins that are supported"
+			echo "list${tab}List the plugins for which shell completion was setup by this plugin"
+			echo "clean${tab}Remove all shell completions that were setup by this plugin"
+			echo "supported${tab}List the installed plugins for which partial shell completion can be setup"
+		fi
+	elif [ $# -eq 2 ] && [[ "$1" != "-"* ]]; then 
+		if [[ "$2" == "-"* ]]; then
+			echo "-h"
+			echo "--help"
+	    elif [[ "$2" == "--"* ]]; then
+			echo "--help"
+		fi
+	fi
+	echo ":4" # No file completion
+}
+
+# Check if we are being asked for completion choices through a __complete command
+# We do this directly in the plugin to allow the plugin to act on itself and install
+# its own shell completion.
+if [ $# -gt 1 ] && [ $1 = __complete ]; then
+	shift
+	set -x
+	complete "$@"
+	exit 0
+fi
 
 if [ $# -eq 0 ]; then
 	help
