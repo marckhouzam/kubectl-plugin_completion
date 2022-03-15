@@ -4,7 +4,7 @@ metadata:
   name: plugin-completion
 spec:
   homepage: https://github.com/marckhouzam/kubectl-plugin_completion
-  shortDescription: Setup shell completion for different kubectl plugins
+  shortDescription: Generate shell completion scripts for different kubectl plugins
   version: v0.1.0
   description: |
     Enable shell completion for some installed plugins (supports over 50% of krew plugins).
