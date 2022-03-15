@@ -28,7 +28,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m'
 
-compDir="$HOME/.kubectl_plugin_completion"
+compDir="$HOME/.kubectl-plugin-completion"
 
 help() {
 	if [[ $# -eq 0 ]]; then
@@ -89,6 +89,12 @@ mkdir -p "$compDir"
 # This function is the basic functionality.  It will generate a shell completion
 # script for any plugins using Cobra that does not have it setup already.
 generate() {
+	# Algorithm:
+	# 1- list all installed plugins
+	# 2- check if kubectl_complete-<plugin> is already on $PATH
+	# 3- if not, check if the plugin executable contains a string specific to using Cobra
+	# 4- if so, generate a kubectl_complete-<plugin> executable and store it in $HOME/.kubectl-plugin-completion
+	# 5- remind the user that this directory must be on $PATH
 	for plugin in $(kubectl plugin list --name-only 2> /dev/null | grep kubectl); do
 		pluginName=${plugin#kubectl-}
 		compFile="kubectl_complete-${pluginName}"
@@ -96,13 +102,11 @@ generate() {
 			# Check if $plugin contains the string ValidArgsFunction which
 			# is a way to know it uses Cobra.
 			if $(grep ValidArgsFunction -q $(which $plugin));then
-				pluginDir=$(dirname $(which $plugin))
 				cat << EOF > "$compDir/$compFile"
 #!/bin/sh
 kubectl $pluginName __complete "\$@"
 EOF
 				chmod +x "$compDir/$compFile"
-				ln -s "$compDir/$compFile" $pluginDir/$compFile
 				echo -e "${GREEN}Shell completion for plugin '$pluginName' has been generated.${NC}"
 			else
 				echo -e "${YELLOW}Shell completion for plugin '$pluginName' is cannot be generated (the plugin does not use Cobra).${NC}"
@@ -115,6 +119,11 @@ EOF
 			fi
 		fi
 	done
+	if ! echo $PATH | grep $(basename $compDir) -q; then
+		echo
+		echo "IMPORTANT: the $compDir MUST be part of your \$PATH so the shell completion scripts can be found."
+		echo "           It is recommended to add this directory to the end of the \$PATH variable."
+	fi
 }
 
 clean() {
@@ -122,7 +131,6 @@ clean() {
 	for f in $(ls $compDir/kubectl_complete-* 2> /dev/null); do
 		plugin="${f#$compDir/kubectl_complete-}"
 		echo "Removing script for plugin '$plugin'"			
-		rm -f $(which "kubectl_complete-$plugin")
 	done
 	rm -f $compDir/kubectl_complete-*
 	rmdir $compDir
@@ -132,9 +140,7 @@ list() {
 	echo "This plugin has generated shell completion scripts for the following plugins:"
 	echo
 	for f in $(ls $compDir/kubectl_complete-* 2> /dev/null); do
-		if ls -l $f | grep plugin_completion -q; then
-			echo "${f#$compDir/kubectl_complete-}"
-		fi
+		echo "${f#$compDir/kubectl_complete-}"
 	done
 }
 
