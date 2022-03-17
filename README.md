@@ -7,9 +7,8 @@
 Plugin that generates shell completion scripts for over half the kubectl plugins.
 
 ```bash
-$ curl -so kubectl-plugin_completion https://raw.githubusercontent.com/marckhouzam/kubectl-plugin_completion/main/kubectl-plugin_completion
-$ chmod +x kubectl-plugin_completion
-$ # mv kubectl-plugin_completion <some directory on $PATH>
+$ kubectl krew install --manifest-url https://raw.githubusercontent.com/marckhouzam/kubectl-plugin_completion/v0.1.0/plugin-completion.yaml
+
 $ kubectl plugin-completion generate
 $ export PATH=$PATH:$HOME/.kubectl-plugin-completion
 ```
@@ -26,9 +25,9 @@ shell completion scripts when possible, for the currently installed plugins.
 
 ## Installation
 
-1. Download the plugin file: `curl -so kubectl-plugin_completion https://raw.githubusercontent.com/marckhouzam/kubectl-plugin_completion/main/kubectl-plugin_completion`
-1. Give the `kubectl-plugin_completion` file executable permissions (`chmod +x kubectl-plugin_completion`)
-1. Move the `kubectl-plugin_completion` file to a directory that is on your `$PATH` variable
+This plugin is not (yet?) available on the Krew index, but can still be installed with Krew.
+
+1. Install the plugin: `kubectl krew install --manifest-url https://raw.githubusercontent.com/marckhouzam/kubectl-plugin_completion/v0.1.0/plugin-completion.yaml`
 1. Add the `$HOME/.kubectl-plugin-completion` directory at the end of your `$PATH` variable
 
 ## Usage
