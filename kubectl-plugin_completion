@@ -120,7 +120,7 @@ EOF
 				chmod +x "$compDir/$compFile"
 				echo -e "${GREEN}Shell completion for plugin '$pluginName' has been generated.${NC}"
 			else
-				echo -e "${YELLOW}Shell completion for plugin '$pluginName' is cannot be generated (the plugin does not use Cobra).${NC}"
+				echo -e "${YELLOW}Shell completion for plugin '$pluginName' cannot be generated (the plugin does not use Cobra).${NC}"
 			fi
 		else
 			if ls "$compDir/$compFile" > /dev/null 2>&1 ; then

@@ -25,7 +25,7 @@ spec:
         - darwin
         - linux
     uri: https://github.com/marckhouzam/kubectl-plugin_completion/releases/download/v0.1.0/plugin-completion.tar.gz
-    sha256: 44a39b1c425517505208f009a27f77875c08aaeb564c0569743b175b458c6c90
+    sha256: 379fc96afb66f79227bac5464924dd1a553b19fd0dfa47cce8ba0c96c3cfe46c
     bin: kubectl-plugin_completion
     files:
     - from: kubectl-plugin_completion
